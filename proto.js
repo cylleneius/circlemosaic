@@ -263,7 +263,7 @@ $(document).ready(function()
     var sw = (window.innerWidth > 0) ? window.innerWidth : screen.width;
     var sh = (window.innerHeight > 0) ? window.innerHeight : screen.height;
 
-    var cir = new circlemosaic( 100, 100, 100, 800, 0, 85, "auto" );
+    var cir = new circlemosaic( 600, 100, 600, 900, 0, 275, "auto" );
 
 
     var $items = $("#diagram2").children();
