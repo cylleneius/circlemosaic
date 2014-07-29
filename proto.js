@@ -192,22 +192,28 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
     }
     //
     //
-    function radius_next( r, maxitems, targetlength )
+    function find_numitems_for_radius( r, targetlength )
     {
+        var items = 5;
         for( ; ; )
         {
-            if( length_of_side_inradius( r, maxitems ) > targetlength )
+            if( length_of_side_inradius( r, items ) > targetlength )
             {
-                maxitems = maxitems + 1;
+                items = items + 1;
             }
             else
             {
-                return maxitems;
+                return items;
             }
         }
     }
     //"Public variables"
-    this.maxitems = targetitems;
+    if( targetitems !== "auto" )
+        this.maxitems = targetitems;
+    else
+    {
+        this.maxitems = find_numitems_for_radius( min_r, 75 );
+    }
     this.center_x = cx;
     this.center_y = cy;
     
@@ -217,7 +223,7 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
     this.degree_s = min_d;
     this.degree_e = max_d;
     
-    this.tile_normal_width = length_of_side_inradius( this.inradius, this.maxitems );
+    this.tile_normal_width = 75;
     this.tile_larger_width = 0;
     this.tile_normal_height = 0;
     this.tile_larger_height = 0;
@@ -244,7 +250,7 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
             }
             var r = new ring( this, pr.radius + 80, this.degree_s, this.degree_e );
             this.rings.push( r );
-            r.maxitems = radius_next( pr.radius + 80, this.maxitems, 75 );
+            r.maxitems = find_numitems_for_radius( pr.radius + 80, this.tile_normal_width );
             this.rings[ this.rings.length -1 ].add_item( element )
         }
    	   //this.items.push( element );
@@ -257,7 +263,7 @@ $(document).ready(function()
     var sw = (window.innerWidth > 0) ? window.innerWidth : screen.width;
     var sh = (window.innerHeight > 0) ? window.innerHeight : screen.height;
 
-    var cir = new circlemosaic( 100, 100, 230, 800, 0, 90, 20 );
+    var cir = new circlemosaic( 100, 100, 100, 800, 0, 85, "auto" );
 
 
     var $items = $("#diagram2").children();
