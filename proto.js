@@ -123,7 +123,7 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
                var it = this.items[ i ];
                //The angle of the current item.
                var   a = (angle_step * i) + (this.degree_s*(Math.PI/180));
-               console.log( "angle:" + (angle_step * i) + " " + (this.degree_s*(Math.PI/180)) );
+               //console.log( "angle:" + (angle_step * i) + " " + (this.degree_s*(Math.PI/180)) );
                //var ad = (a*(180/Math.PI));
                //console.log( ad + "" );
                //if( ad > cir.degree_e )
@@ -151,7 +151,6 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
            
            this.items.push( new item( 0,0,75,75,element ) );
            
-           //this.reposition( );
            //The angle between the items.
            //FIXME: maxitems needs to be switchable with numitems
            var angle_step = 2 * Math.PI / this.maxitems;
@@ -161,30 +160,22 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
                var it = this.items[ i ];
                //The angle of the current item.
                var   a = (angle_step * i) + (this.degree_s*(Math.PI/180));
-               //console.log( a + " " + this.degree_e );
+                                          
+               
                var ad = (a*(180/Math.PI));
-               //console.log( ad + "" );
+               
                if( ad > this.degree_e )
                {
                    this.items.splice( i, 1 );
                    var er = this.degree_e - this.items[ i-1 ].rotation;
                    var pr = this.degree_e - this.degree_s; // total arc span
                    
-                   this.degree_s = er*.5;
+                   this.degree_s = er*.5 + ((angle_step * .5)*(180/Math.PI));
                    this.degree_e = this.degree_s + pr;
                    console.log( "now:" + this.degree_s + " " + this.degree_e );
                    return 1;
                }
-               //The position along the circle
-               //var ptx = this.radius * Math.cos( a );
-               //var pty = this.radius * Math.sin( a );
                
-               //it.rotation = Math.atan2(pty, ptx) * 180 / Math.PI;
-               
-               //it.x = ptx + cx;
-               //it.y = pty + cy;
-               
-               //position_item( it );
            }
            this.reposition( );
            return 0;
@@ -225,9 +216,10 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
     
     this.tile_normal_width = 75;
     this.tile_larger_width = 0;
-    this.tile_normal_height = 0;
+    this.tile_normal_height = 75;
     this.tile_larger_height = 0;
     
+    this.total_height = 0;
     this.rings = [ ];
     //this.items = [ ];
     this.add_item = function( element )
@@ -238,6 +230,7 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
             var r = new ring( this, this.inradius, this.degree_s, this.degree_e );
             this.rings.push( r );
             r.maxitems = this.maxitems;
+            this.total_height = this.tile_normal_height;
         }
         //alert( this.rings.length );
         if( this.rings[ this.rings.length -1 ].add_item( element ) === 1 )
@@ -251,27 +244,18 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
             var r = new ring( this, pr.radius + 80, this.degree_s, this.degree_e );
             this.rings.push( r );
             r.maxitems = find_numitems_for_radius( pr.radius + 80, this.tile_normal_width );
-            this.rings[ this.rings.length -1 ].add_item( element )
+            this.rings[ this.rings.length -1 ].add_item( element );
+            this.total_height = this.total_height + this.tile_normal_height;
         }
    	   //this.items.push( element );
     };
+    this.reposition = function ()
+    {
+        for( var i = 0; i < this.rings.length; i++ )
+        {
+            this.rings[ i ].reposition();
+        }
+    }
 }
 
-$(document).ready(function()
-    {
-    
-    var sw = (window.innerWidth > 0) ? window.innerWidth : screen.width;
-    var sh = (window.innerHeight > 0) ? window.innerHeight : screen.height;
 
-    var cir = new circlemosaic( 600, 100, 600, 900, 0, 275, "auto" );
-
-
-    var $items = $("#diagram2").children();
-    //console.log( JSON.stringify( $items ));
-    $items.each(function (idx, el)
-    {
-        cir.add_item( el );
-    });
-    
-//console.log( JSON.stringify(cir, null, 4) );
-    });
