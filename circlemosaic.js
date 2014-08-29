@@ -39,10 +39,10 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
     function position_item( it )
     {
         var el = $(it.element);
-        
+        el.css("position", "absolute");
         el.css("left", it.x + 'px' );
         el.css("top", it.y + 'px' );
-        
+        //console.log( JSON.stringify( it, null, 4 ));
         el.css("transformOrigin", 'top left');
         el.css("transform", 'rotate('+(it.rotation-90)+'deg) ' +
                              'translate(-'+(it.width*.5)+'px, -'+(0)+'px)' );
@@ -51,10 +51,8 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
                            event.preventDefault();
                            e = $(this);
                            ( function( e, it ) {
-                               //e.addClass("in");
-                               //tfm = 'rotate('+ 0 + 'deg) ' ;
-                               //tfm += 'translate('+(0)+'px, '+(0)+'px)';
-                               e.css("width", "125px");
+
+                               e.css("width", it.l_width +'px');
                                e.css("z-index", "50");
                                e.css("left", it.x + 'px' );
                                e.css("top", it.y + 'px' );
@@ -62,12 +60,6 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
                                e.css("transformOrigin", 'top left');
                                e.css("transform", 'rotate('+(it.rotation-90)+'deg) ' +
                                                   'translate(-'+(125*.5)+'px, -'+(0)+'px)' );
-                               //e.removeClass("in");
-                               //e.addClass("out");
-                               //e.css("transform", tfm);
-                               
-                               //e.css("left", (tx-(e.width()*.5)) + 'px' )
-                               //.css("top", (ty-(e.height()*.5)) + 'px' );
                            } )( e, it )
                        },
                 //);
@@ -80,17 +72,18 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
                                    
                                    e.css("left", it.x + 'px' );
                                    e.css("top", it.y + 'px' );
-                                   e.css("width", "75px");
+                                   e.css("width", it.width + 'px');
                                    e.css("z-index", "10");
                                    e.css("transformOrigin", 'top left');
                                    e.css("transform", 'rotate('+(it.rotation-90)+'deg) ' +
-                                                       'translate(-'+(it.width*.5)+'px, -'+(0)+'px)' );
+                                                      'translate(-'+(it.width*.5)+'px, -'+(0)+'px)' );
                            })( e, it )
                        }
                );
     }
     //
-    //
+    //FIXME: item needs to be moved to a container object, since circlemosaic is
+    //       a layout (for a container of items)
     function item( x, y, width, height, el )
     {
         this.rotation = 0;
@@ -98,6 +91,8 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
         this.y = y;
         this.width  = width;
         this.height = height;
+        this.l_width  = width;
+        this.l_height = height;
         this.element = el;
     }
     //
@@ -137,9 +132,9 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
                var pty = this.radius * Math.sin( a );
                
                it.rotation = a * (180/Math.PI);//Math.atan2(pty, ptx) * 180 / Math.PI;
-               
-               it.x = ptx + cx;
-               it.y = pty + cy;
+               //console.log( ptx + " " + pty + " : " + cx + " " + cy + " : " + cir.center_x + " " +cir.center_y);
+               it.x = ptx + cir.center_x;
+               it.y = pty + cir.center_y;
                
                position_item( it );
            }
@@ -148,8 +143,8 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
         this.add_item = function( element )
         {
            if( this.items.length === this.maxitems ) return 1;
-           
-           this.items.push( new item( 0,0,75,75,element ) );
+           //console.log(JSON.stringify( this, null, 4));
+           this.items.push( new item( 0,0,cir.tile_normal_width,cir.tile_normal_height,element ) );
            
            //The angle between the items.
            //FIXME: maxitems needs to be switchable with numitems
@@ -172,7 +167,8 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
                    
                    this.degree_s = er*.5 + ((angle_step * .5)*(180/Math.PI));
                    this.degree_e = this.degree_s + pr;
-                   console.log( "now:" + this.degree_s + " " + this.degree_e );
+                   //console.log( "now:" + this.degree_s + " " + this.degree_e );
+                   //Loop through arc and prune the elements out of range
                    return 1;
                }
                
@@ -203,6 +199,7 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
         this.maxitems = targetitems;
     else
     {
+        //FIXME: This makes no sense. (max items is minimum radius?)
         this.maxitems = find_numitems_for_radius( min_r, 75 );
     }
     this.center_x = cx;
@@ -221,6 +218,18 @@ function circlemosaic( cx, cy, min_r, max_r, min_d, max_d, targetitems )
     
     this.total_height = 0;
     this.rings = [ ];
+    
+    this.con = null;
+    
+    this.layout = function( con )
+    {
+        this.con = con;
+        //FIXME: workaround for now. refactor later.
+        for( var i =0; i < this.con.items.length; i++ )
+        {
+            this.add_item( this.con.items[ i ].element );
+        }
+    }
     //this.items = [ ];
     this.add_item = function( element )
     {
