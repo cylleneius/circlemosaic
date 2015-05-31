@@ -1,0 +1,4 @@
+TODO: Fix z index for items in circlemosaic
+TODO: circlemosaic needs to not paint beyond the bounds of the screen, and instead
+      add more rings, expanding horizontally (until the edge of the screen, again).
+TODO: add some sort of scrolling mechanism for items in the circlemosaic.
